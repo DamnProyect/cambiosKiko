@@ -57,7 +57,7 @@ class _ProductWidgetState extends State<ProductWidget> {
                           //Lo agrega
                           ModeloUsuario.addFavorite(
                             Favorito(
-                                widget.nombre, widget.image, widget.precio),
+                                widget.id, widget.nombre, widget.precio),
                           );
                         }
                       },

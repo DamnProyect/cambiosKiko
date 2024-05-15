@@ -10,7 +10,6 @@ class CarritoPage extends StatefulWidget {
 }
 
 class _CarritoPageState extends State<CarritoPage> {
-  final controller = TextEditingController();
   List<ProductoModel> productos = [];
   final dao = ProductoDao();
   @override
@@ -25,7 +24,6 @@ class _CarritoPageState extends State<CarritoPage> {
 
   @override
   void dispose() {
-    controller.dispose();
     super.dispose();
   }
 
@@ -54,28 +52,6 @@ class _CarritoPageState extends State<CarritoPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final name = controller.text;
-                    ProductoModel producto = ProductoModel(name: name);
-                    final id = await dao.Insert(producto);
-                    producto = producto.copyWith(id: id);
-                    controller.clear();
-                    setState(() {
-                      productos.add(producto);
-                    });
-                  },
-                  child: const Text('Crear Producto'),
-                ),
-              ],
-            ),
           ),
           ListView.builder(
             physics:
