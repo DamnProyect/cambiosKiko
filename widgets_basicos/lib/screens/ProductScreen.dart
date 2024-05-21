@@ -1,7 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
-import "package:widgets_basicos/baseDeDatos/favorito_dao.dart";
 import "package:widgets_basicos/baseDeDatos/producto_dao.dart";
 import "package:widgets_basicos/baseDeDatos/producto_model.dart";
 import "package:widgets_basicos/models/Favoritos.dart";
@@ -16,14 +15,14 @@ class ProductScreen extends StatelessWidget {
   ProductScreen(this.image, this.nombre, this.precio, this.desc, {super.key}) {
     super.key;
   }
-  //Metodos de insert y de la base de datos
+  // Metodos de insert y de la base de datos
   final dao = ProductoDao();
-  final favDao = FavoritoDao();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ModeloUsuario>(
-      builder: (context, ModeloUsuario, child) {
-        final bool esFavorito = ModeloUsuario.existFavorite(nombre) != -1;
+      builder: (context, modeloUsuario, child) {
+        final bool esFavorito = modeloUsuario.existFavorite(nombre) != -1;
 
         return Scaffold(
           body: SafeArea(
@@ -37,14 +36,16 @@ class ProductScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Color.fromARGB(255, 244, 224, 224),
                       image: DecorationImage(
-                          image: AssetImage(image), fit: BoxFit.cover),
+                        image: AssetImage(image),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          //Boton de volver
+                          // Boton de volver
                           InkWell(
                             onTap: () {
                               Navigator.pop(context);
@@ -62,26 +63,23 @@ class ProductScreen extends StatelessWidget {
                             ),
                           ),
 
-                          //Boton de favorito
+                          // Boton de favorito
                           InkWell(
-                            onTap: () async {
-                              {
-                                final name = nombre;
-                                Favorito favorito =
-                                    Favorito(id, nombre: "", precio);
-                                final id = await favDao.insertFav(favorito);
-                                favorito = favorito.copyWith(id: id);
-                              }
+                            onTap: () {
                               int indexFav =
-                                  ModeloUsuario.existFavorite(nombre);
-                              //Si existe el favorito lo borra
-
+                                  modeloUsuario.existFavorite(nombre);
+                              // Si existe el favorito lo borra
                               if (indexFav != -1) {
-                                ModeloUsuario.deleteFavorite(indexFav);
+                                modeloUsuario.deleteFavorite(indexFav);
                               } else {
-                                //Lo agrega
-                                ModeloUsuario.addFavorite(
-                                  Favorito(id, nombre: "", precio),
+                                // Lo agrega
+                                modeloUsuario.addFavorite(
+                                  Favorito(
+                                    id: 0, // Autoincremental en la BD
+                                    nombre: nombre,
+                                    imagen: image,
+                                    precio: precio,
+                                  ),
                                 );
                               }
                             },
@@ -91,8 +89,7 @@ class ProductScreen extends StatelessWidget {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(30),
                               ),
-
-                              //Boton de favorito
+                              // Boton de favorito
                               child: Icon(
                                 Icons.favorite,
                                 size: 22,
@@ -104,9 +101,7 @@ class ProductScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 15, right: 15),
                     child: Column(
@@ -117,41 +112,40 @@ class ProductScreen extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              //Nombre del producto
+                              // Nombre del producto
                               Text(
                                 nombre,
                                 style: const TextStyle(
-                                    fontSize: 28, fontWeight: FontWeight.bold),
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              //Precio del producto
+                              // Precio del producto
                               Text(
                                 "${precio.toStringAsFixed(2)} €",
                                 style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.red.withOpacity(0.7)),
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.red.withOpacity(0.7),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        //Descripcion simple
+                        const SizedBox(height: 8),
+                        // Descripcion simple
                         const Text(
                           "Infoooo",
                           style: TextStyle(color: Colors.black54, fontSize: 16),
                         ),
-                        const SizedBox(
-                          height: 18,
-                        ),
-                        //Descripcion larga
+                        const SizedBox(height: 18),
+                        // Descripcion larga
                         Text(
                           desc,
                           style: TextStyle(fontSize: 16, color: Colors.black54),
                         ),
                         const SizedBox(height: 20),
-                        //Botones de carrito y compra
+                        // Botones de carrito y compra
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -166,8 +160,9 @@ class ProductScreen extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(18),
                                 decoration: BoxDecoration(
-                                    color: const Color(0xFFF7F8FA),
-                                    borderRadius: BorderRadius.circular(30)),
+                                  color: const Color(0xFFF7F8FA),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                                 child: const Icon(
                                   CupertinoIcons.cart_fill,
                                   size: 22,
@@ -176,7 +171,7 @@ class ProductScreen extends StatelessWidget {
                               ),
                             ),
                             InkWell(
-                              //Boton comprara ahora
+                              // Boton comprar ahora
                               onTap: () {},
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
@@ -195,9 +190,9 @@ class ProductScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            )
+                            ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),

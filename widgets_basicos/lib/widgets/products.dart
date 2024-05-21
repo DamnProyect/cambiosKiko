@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
 import 'package:widgets_basicos/models/Favoritos.dart';
+import 'package:widgets_basicos/models/productsModel.dart';
 import 'package:widgets_basicos/screens/productScreen.dart';
-
 import '../view_models/modelo_usuario.dart';
 
 class ProductWidget extends StatefulWidget {
-  final String nombre;
-  final int precio;
-  final String desc;
-  final String image;
+  final Product producto;
 
   ProductWidget({
     super.key,
-    required this.nombre,
-    required this.precio,
-    required this.desc,
-    required this.image,
+    required this.producto,
   });
 
   @override
@@ -26,13 +20,15 @@ class ProductWidget extends StatefulWidget {
 }
 
 class _ProductWidgetState extends State<ProductWidget> {
+  final dao = ProductoDao();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ModeloUsuario>(
-      builder: (context, ModeloUsuario, child) {
-        final bool esAdmin = ModeloUsuario.esAdmin;
+      builder: (context, modeloUsuario, child) {
+        final bool esAdmin = modeloUsuario.esAdmin;
         final bool esFavorito =
-            ModeloUsuario.existFavorite(widget.nombre) != -1;
+            modeloUsuario.existFavorite(widget.producto.name) != -1;
 
         return Center(
           child: Container(
@@ -45,26 +41,26 @@ class _ProductWidgetState extends State<ProductWidget> {
                   child: Padding(
                     padding: EdgeInsets.only(top: 6, right: 9),
                     child: InkWell(
-                      onTap: () {
+                      onTap: () async {
                         int indexFav =
-                            ModeloUsuario.existFavorite(widget.nombre);
-
-                        //Si existe el favorito lo borra
+                            modeloUsuario.existFavorite(widget.producto.name);
 
                         if (indexFav != -1) {
-                          ModeloUsuario.deleteFavorite(indexFav);
+                          modeloUsuario.deleteFavorite(indexFav);
                         } else {
-                          //Lo agrega
-                          ModeloUsuario.addFavorite(
+                          modeloUsuario.addFavorite(
                             Favorito(
-                                widget.id, widget.nombre, widget.precio),
+                              id: 0, // Autoincremental en la BD
+                              imagen: widget.producto.image,
+                              nombre: widget.producto.name,
+                              precio: widget.producto.price,
+                            ),
                           );
                         }
                       },
                       child: Icon(
                         Icons.favorite,
                         size: 20,
-                        // Dependiendo si es favorito o no lo pinta de un color u otro
                         color: esFavorito ? Colors.red : Colors.black,
                       ),
                     ),
@@ -76,18 +72,21 @@ class _ProductWidgetState extends State<ProductWidget> {
                   left: 0,
                   child: Column(
                     children: [
-                      //Verificara si se le a dado tap a la imagen
                       GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => ProductScreen(widget.image,
-                                  widget.nombre, widget.precio, widget.desc),
+                              builder: (context) => ProductScreen(
+                                widget.producto.image,
+                                widget.producto.name,
+                                widget.producto.price,
+                                widget.producto.desc,
+                              ),
                             ),
                           );
                         },
                         child: Image.asset(
-                          "assets/images/Carrusel2.jpg",
+                          widget.producto.image,
                           fit: BoxFit.contain,
                           width: 111,
                           height: 111,
@@ -95,15 +94,14 @@ class _ProductWidgetState extends State<ProductWidget> {
                       ),
                       SizedBox(height: 5),
                       Text(
-                        widget.nombre,
+                        widget.producto.name,
                         style: GoogleFonts.playfairDisplay(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        "${widget.precio.toStringAsFixed(2)} €",
+                        "${widget.producto.price.toStringAsFixed(2)} €",
                         style: GoogleFonts.playfairDisplay(fontSize: 16),
                       ),
-                      //Fila de los botones de edicion y borrado
                       Visibility(
                         visible: esAdmin,
                         child: Row(
@@ -114,12 +112,15 @@ class _ProductWidgetState extends State<ProductWidget> {
                               child: Icon(Icons.border_color_outlined),
                             ),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await dao.deleteProduct(widget.producto.id);
+                                modeloUsuario.actualizarGrid();
+                              },
                               child: Icon(Icons.delete_outline),
-                            )
+                            ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
