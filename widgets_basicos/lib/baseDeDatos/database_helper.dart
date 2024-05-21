@@ -28,7 +28,7 @@ class DatabaseHelper {
 
         // Tabla de carrito
         await db.execute(
-          'CREATE TABLE carrito (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, cantidad INTEGER DEFAULT 1)',
+          'CREATE TABLE carrito (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, name TEXT, cantidad INTEGER DEFAULT 1, FOREIGN KEY(userId) REFERENCES usuarios(id))',
         );
         print("Table 'carrito' created."); // Log de creación de tabla
 
@@ -40,7 +40,7 @@ class DatabaseHelper {
 
         // Tabla de favoritos
         await db.execute(
-          'CREATE TABLE favoritos (id INTEGER PRIMARY KEY AUTOINCREMENT, image TEXT, name TEXT, price INTEGER DEFAULT 1)',
+          'CREATE TABLE favoritos (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, image TEXT, name TEXT, price INTEGER DEFAULT 1, FOREIGN KEY(userId) REFERENCES usuarios(id))',
         );
         print("Table 'favoritos' created."); // Log de creación de tabla
       },
@@ -79,6 +79,33 @@ class DatabaseHelper {
     );
 
     return maps.isNotEmpty;
+  }
+
+  // Métodos para gestionar el carrito
+  Future<int> insertCarrito(int userId, String name, int cantidad) async {
+    final db = await instance.db;
+    return await db.insert('carrito', {'userId': userId, 'name': name, 'cantidad': cantidad});
+  }
+
+  Future<List<Map<String, dynamic>>> getCarrito(int userId) async {
+    final db = await instance.db;
+    return await db.query('carrito', where: 'userId = ?', whereArgs: [userId]);
+  }
+
+  // Métodos para gestionar los favoritos
+  Future<int> insertFavorito(int userId, String image, String name, int price) async {
+    final db = await instance.db;
+    return await db.insert('favoritos', {'userId': userId, 'image': image, 'name': name, 'price': price});
+  }
+
+  Future<List<Map<String, dynamic>>> getFavoritos(int userId) async {
+    final db = await instance.db;
+    return await db.query('favoritos', where: 'userId = ?', whereArgs: [userId]);
+  }
+
+  Future<void> deleteFav(int id) async {
+    final db = await instance.db;
+    await db.delete('favoritos', where: 'id = ?', whereArgs: [id]);
   }
 
   // Función de eliminar la base de datos

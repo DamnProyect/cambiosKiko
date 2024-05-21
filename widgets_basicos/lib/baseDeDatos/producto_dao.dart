@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
@@ -9,14 +8,16 @@ import 'package:widgets_basicos/models/productsModel.dart';
 class ProductoDao {
   final database = DatabaseHelper.instance.db;
 
-  Future<List<ProductoModel>> readAll() async {
-    final data = await database.query('carrito');
+  Future<List<ProductoModel>> readAll(int userId) async {
+    final data = await database.query('carrito', where: 'userId = ?', whereArgs: [userId]);
     return data.map((e) => ProductoModel.fromMap(e)).toList();
   }
 
-  Future<int> Insert(ProductoModel producto) async {
+  Future<int> insert(ProductoModel producto, int userId) async {
     return await database.insert(
-        'carrito', {'name': producto.name, 'cantidad': producto.cantidad});
+      'carrito', 
+      {'userId': userId, 'name': producto.name, 'cantidad': producto.cantidad}
+    );
   }
 
   Future<void> updateCantidad(int id, int nuevaCantidad) async {
@@ -31,13 +32,21 @@ class ProductoDao {
     );
   }
 
-  Future<void> update(ProductoModel producto) async {
-    await database.update('carrito', producto.toMap(),
-        where: 'id = ?', whereArgs: [producto.id]);
+  Future<void> update(ProductoModel producto, int userId) async {
+    await database.update(
+      'carrito', 
+      producto.toMap(),
+      where: 'id = ? AND userId = ?', 
+      whereArgs: [producto.id, userId]
+    );
   }
 
-  Future<void> delete(ProductoModel producto) async {
-    await database.delete('carrito', where: 'id = ?', whereArgs: [producto.id]);
+  Future<void> delete(ProductoModel producto, int userId) async {
+    await database.delete(
+      'carrito', 
+      where: 'id = ? AND userId = ?', 
+      whereArgs: [producto.id, userId]
+    );
   }
 
   //*************************Tabla productos*************************//
@@ -88,7 +97,7 @@ class ProductoDao {
     );
   }
 
-//Metodo qque verifica si hay productos en la tabla
+  //Metodo qque verifica si hay productos en la tabla
   Future<bool> isProductEmpty() async {
     List<Map<String, dynamic>> products =
         await database.query('productos', limit: 1);
@@ -101,12 +110,13 @@ class ProductoDao {
   //*************************Tabla favoritos*************************//
 
   // Método para insertar Favoritos
-  Future<int> insertFav(Favorito favorito) async {
+  Future<int> insertFav(Favorito favorito, int userId) async {
     final db = await database;
     print('Inserting favorite: ${favorito.nombre}');
     return await db.insert(
       'favoritos',
       {
+        'userId': userId,
         'image': favorito.imagen,
         'name': favorito.nombre,
         'price': favorito.precio
@@ -115,10 +125,10 @@ class ProductoDao {
   }
 
   // Método para lectura de Favoritos
-  Future<List<Favorito>> readFav() async {
+  Future<List<Favorito>> readFav(int userId) async {
     final db = await database;
     final List<Map<String, Object?>> favMaps =
-        await db.query('favoritos');
+        await db.query('favoritos', where: 'userId = ?', whereArgs: [userId]);
     print('Reading favorites: ${favMaps.length}');
     return [
       for (final {
@@ -132,9 +142,9 @@ class ProductoDao {
   }
 
   // Método para borrado de Favoritos
-  Future<void> deleteFav(Favorito favorito) async {
+  Future<void> deleteFav(Favorito favorito, int userId) async {
     final db = await database;
     await db
-        .delete('favoritos', where: 'id = ?', whereArgs: [favorito.id]);
+        .delete('favoritos', where: 'id = ? AND userId = ?', whereArgs: [favorito.id, userId]);
   }
 }

@@ -9,9 +9,9 @@ void main() async {
   // Asegura la inicialización de widgets
   WidgetsFlutterBinding.ensureInitialized();
 
-  /* Elimina la base de datos existente (solo para desarrollo)
-  await DatabaseHelper.instance.deleteDatabase();
-  */
+  // Elimina la base de datos existente (solo para desarrollo)
+  //await DatabaseHelper.instance.deleteDatabase();
+  
 
   // Inicializa la base de datos
   await DatabaseHelper.instance.init();

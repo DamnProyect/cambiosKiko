@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
+import 'package:widgets_basicos/view_models/modelo_usuario.dart';
 
 class CarritoPage extends StatefulWidget {
   const CarritoPage({super.key});
@@ -13,13 +15,19 @@ class _CarritoPageState extends State<CarritoPage> {
   final controller = TextEditingController();
   List<ProductoModel> productos = [];
   final dao = ProductoDao();
+
   @override
   void initState() {
     super.initState();
-    dao.readAll().then((value) {
-      setState(() {
-        productos = value;
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final modeloUsuario = Provider.of<ModeloUsuario>(context, listen: false);
+      if (modeloUsuario.incioSesion) {
+        dao.readAll(modeloUsuario.usuarioActual!.id).then((value) {
+          setState(() {
+            productos = value;
+          });
+        });
+      }
     });
   }
 
@@ -71,7 +79,7 @@ class _CarritoPageState extends State<CarritoPage> {
                           onPressed: () async {
                             if (producto.cantidad > 1) {
                               producto.cantidad--;
-                              await dao.update(producto);
+                              await dao.update(producto, Provider.of<ModeloUsuario>(context, listen: false).usuarioActual!.id);
                               setState(() {});
                             }
                           },
@@ -92,7 +100,7 @@ class _CarritoPageState extends State<CarritoPage> {
                           onPressed: () async {
                             if (producto.cantidad < 99) {
                               producto.cantidad++;
-                              await dao.update(producto);
+                              await dao.update(producto, Provider.of<ModeloUsuario>(context, listen: false).usuarioActual!.id);
                               setState(() {});
                             }
                           },
@@ -104,7 +112,7 @@ class _CarritoPageState extends State<CarritoPage> {
                       const SizedBox(width: 10.0),
                       IconButton(
                         onPressed: () async {
-                          await dao.delete(producto);
+                          await dao.delete(producto, Provider.of<ModeloUsuario>(context, listen: false).usuarioActual!.id);
                           setState(() {
                             productos.removeWhere(
                                 (element) => element.id == producto.id);

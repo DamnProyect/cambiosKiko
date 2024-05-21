@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
 import 'package:widgets_basicos/models/Favoritos.dart';
 import 'package:widgets_basicos/models/carga_Datos.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
@@ -6,8 +7,9 @@ import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
 import 'package:widgets_basicos/baseDeDatos/usuarioModel.dart';
 
 class ModeloUsuario extends ChangeNotifier {
-  // Listado de favoritos
+  // Listado de favoritos y carrito
   List<Favorito> favorites = <Favorito>[];
+  List<ProductoModel> carrito = <ProductoModel>[]; // Cambio aquí
   final ProductoDao _productoDao = ProductoDao();
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
@@ -22,10 +24,20 @@ class ModeloUsuario extends ChangeNotifier {
   // Constructor
   ModeloUsuario() {
     _loadFavorites();
+    _loadCarrito();
   }
 
   Future<void> _loadFavorites() async {
-    favorites = await _productoDao.readFav();
+    if (_usuarioActual != null) {
+      favorites = (await _databaseHelper.getFavoritos(_usuarioActual!.id)).map((map) => Favorito.fromMap(map)).toList();
+    }
+    notifyListeners();
+  }
+
+  Future<void> _loadCarrito() async {
+    if (_usuarioActual != null) {
+      carrito = (await _productoDao.readAll(_usuarioActual!.id));
+    }
     notifyListeners();
   }
 
@@ -44,8 +56,8 @@ class ModeloUsuario extends ChangeNotifier {
 
   // Método para agregar el favorito
   void addFavorite(Favorito element) async {
-    if (existFavorite(element.nombre) == -1) {
-      await _productoDao.insertFav(element);
+    if (_usuarioActual != null && existFavorite(element.nombre) == -1) {
+      await _databaseHelper.insertFavorito(_usuarioActual!.id, element.imagen, element.nombre, element.precio);
       favorites.add(element);
       notifyListeners();
     }
@@ -53,10 +65,12 @@ class ModeloUsuario extends ChangeNotifier {
 
   // Método para borrar el elemento
   void deleteFavorite(int favotiteIndex) async {
-    final favorito = favorites[favotiteIndex];
-    await _productoDao.deleteFav(favorito);
-    favorites.removeAt(favotiteIndex);
-    notifyListeners();
+    if (_usuarioActual != null) {
+      final favorito = favorites[favotiteIndex];
+      await _databaseHelper.deleteFav(favorito.id);
+      favorites.removeAt(favotiteIndex);
+      notifyListeners();
+    }
   }
 
   // Método para verificar si el favorito ya fue agregado
@@ -109,6 +123,8 @@ class ModeloUsuario extends ChangeNotifier {
     final usuario = await _databaseHelper.getUsuario(username, password);
     if (usuario != null) {
       _usuarioActual = usuario;
+      await _loadFavorites();
+      await _loadCarrito();
       notifyListeners();
       return true;
     } else {
@@ -118,6 +134,16 @@ class ModeloUsuario extends ChangeNotifier {
 
   void cerrarSesion() {
     _usuarioActual = null;
+    favorites.clear();
+    carrito.clear();
     notifyListeners();
+  }
+
+  // Métodos para el carrito
+  Future<void> addToCarrito(String name, int cantidad) async {
+    if (_usuarioActual != null) {
+      await _databaseHelper.insertCarrito(_usuarioActual!.id, name, cantidad);
+      await _loadCarrito();
+    }
   }
 }

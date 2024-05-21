@@ -1,10 +1,10 @@
-import "package:flutter/cupertino.dart";
-import "package:flutter/material.dart";
-import "package:provider/provider.dart";
-import "package:widgets_basicos/baseDeDatos/producto_dao.dart";
-import "package:widgets_basicos/baseDeDatos/producto_model.dart";
-import "package:widgets_basicos/models/Favoritos.dart";
-import "package:widgets_basicos/view_models/modelo_usuario.dart";
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
+import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
+import 'package:widgets_basicos/models/Favoritos.dart';
+import 'package:widgets_basicos/view_models/modelo_usuario.dart';
 
 class ProductScreen extends StatelessWidget {
   final String image;
@@ -151,11 +151,18 @@ class ProductScreen extends StatelessWidget {
                           children: [
                             InkWell(
                               onTap: () async {
-                                final name = nombre;
-                                ProductoModel producto =
-                                    ProductoModel(name: name);
-                                final id = await dao.Insert(producto);
-                                producto = producto.copyWith(id: id);
+                                if (modeloUsuario.incioSesion) {
+                                  final name = nombre;
+                                  ProductoModel producto = ProductoModel(name: name);
+                                  final id = await dao.insert(producto, modeloUsuario.usuarioActual!.id);
+                                  producto = producto.copyWith(id: id);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Por favor, inicie sesión para agregar al carrito.'),
+                                    ),
+                                  );
+                                }
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(18),
@@ -172,10 +179,17 @@ class ProductScreen extends StatelessWidget {
                             ),
                             InkWell(
                               // Boton comprar ahora
-                              onTap: () {},
+                              onTap: () {
+                                if (!modeloUsuario.incioSesion) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Por favor, inicie sesión para comprar.'),
+                                    ),
+                                  );
+                                }
+                              },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 18, horizontal: 70),
+                                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 70),
                                 decoration: BoxDecoration(
                                   color: Colors.black,
                                   borderRadius: BorderRadius.circular(30),
