@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
-import 'package:widgets_basicos/models/Favoritos.dart';
 import 'package:widgets_basicos/models/productsModel.dart';
 
 class ProductoDao {
@@ -97,7 +96,7 @@ class ProductoDao {
     );
   }
 
-  //Metodo qque verifica si hay productos en la tabla
+  //Metodo que verifica si hay productos en la tabla
   Future<bool> isProductEmpty() async {
     List<Map<String, dynamic>> products =
         await database.query('productos', limit: 1);
@@ -105,46 +104,5 @@ class ProductoDao {
       return true;
     }
     return false;
-  }
-
-  //*************************Tabla favoritos*************************//
-
-  // Método para insertar Favoritos
-  Future<int> insertFav(Favorito favorito, int userId) async {
-    final db = await database;
-    print('Inserting favorite: ${favorito.nombre}');
-    return await db.insert(
-      'favoritos',
-      {
-        'userId': userId,
-        'image': favorito.imagen,
-        'name': favorito.nombre,
-        'price': favorito.precio
-      },
-    );
-  }
-
-  // Método para lectura de Favoritos
-  Future<List<Favorito>> readFav(int userId) async {
-    final db = await database;
-    final List<Map<String, Object?>> favMaps =
-        await db.query('favoritos', where: 'userId = ?', whereArgs: [userId]);
-    print('Reading favorites: ${favMaps.length}');
-    return [
-      for (final {
-            'id': id as int,
-            'image': imagen as String,
-            'name': nombre as String,
-            'price': precio as int,
-          } in favMaps)
-        Favorito(id: id, imagen: imagen, nombre: nombre, precio: precio)
-    ];
-  }
-
-  // Método para borrado de Favoritos
-  Future<void> deleteFav(Favorito favorito, int userId) async {
-    final db = await database;
-    await db
-        .delete('favoritos', where: 'id = ? AND userId = ?', whereArgs: [favorito.id, userId]);
   }
 }

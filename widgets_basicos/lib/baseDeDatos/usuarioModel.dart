@@ -4,10 +4,10 @@ class Usuario {
   final String password;
   final String email;
   final String phoneNumber;
-  final String birthDate; // Nuevo campo
+  final String birthDate; 
 
   Usuario({
-    required this.id,
+    this.id = 0, // Valor por defecto 0, lo que significa que se autoincrementará con SQLite
     required this.username,
     required this.password,
     required this.email,
@@ -17,7 +17,7 @@ class Usuario {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id != 0 ? id : null,
       'username': username,
       'password': password,
       'email': email,

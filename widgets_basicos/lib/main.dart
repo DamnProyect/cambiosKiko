@@ -11,7 +11,6 @@ void main() async {
 
   // Elimina la base de datos existente (solo para desarrollo)
   //await DatabaseHelper.instance.deleteDatabase();
-  
 
   // Inicializa la base de datos
   await DatabaseHelper.instance.init();

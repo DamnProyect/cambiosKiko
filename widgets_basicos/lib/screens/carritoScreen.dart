@@ -21,7 +21,7 @@ class _CarritoPageState extends State<CarritoPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final modeloUsuario = Provider.of<ModeloUsuario>(context, listen: false);
-      if (modeloUsuario.incioSesion) {
+      if (modeloUsuario.inicioSesion) {
         dao.readAll(modeloUsuario.usuarioActual!.id).then((value) {
           setState(() {
             productos = value;

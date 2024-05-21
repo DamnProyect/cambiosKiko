@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
 import 'package:widgets_basicos/models/Favoritos.dart';
 import 'package:widgets_basicos/models/carga_Datos.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
 import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
 import 'package:widgets_basicos/baseDeDatos/usuarioModel.dart';
+import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
 
 class ModeloUsuario extends ChangeNotifier {
   // Listado de favoritos y carrito
@@ -19,7 +19,7 @@ class ModeloUsuario extends ChangeNotifier {
   Usuario? get usuarioActual => _usuarioActual;
 
   // Verifica si se ha iniciado sesión
-  bool get incioSesion => _usuarioActual != null;
+  bool get inicioSesion => _usuarioActual != null;
 
   // Constructor
   ModeloUsuario() {
@@ -112,7 +112,13 @@ class ModeloUsuario extends ChangeNotifier {
     if (existe) {
       return false;
     } else {
-      final usuario = Usuario(id: 0, username: username, password: password, email: email, phoneNumber: phoneNumber, birthDate: birthDate);
+      final usuario = Usuario(
+        username: username,
+        password: password,
+        email: email,
+        phoneNumber: phoneNumber,
+        birthDate: birthDate,
+      );
       await _databaseHelper.insertUsuario(usuario);
       return true;
     }

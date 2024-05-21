@@ -52,7 +52,9 @@ class DatabaseHelper {
 
   Future<int> insertUsuario(Usuario usuario) async {
     final db = await instance.db;
-    return await db.insert('usuarios', usuario.toMap());
+    // Excluye el campo 'id' del mapa para que SQLite lo asigne automáticamente
+    final usuarioMap = usuario.toMap()..remove('id');
+    return await db.insert('usuarios', usuarioMap);
   }
 
   Future<Usuario?> getUsuario(String username, String password) async {

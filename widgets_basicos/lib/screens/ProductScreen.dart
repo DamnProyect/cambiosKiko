@@ -151,7 +151,7 @@ class ProductScreen extends StatelessWidget {
                           children: [
                             InkWell(
                               onTap: () async {
-                                if (modeloUsuario.incioSesion) {
+                                if (modeloUsuario.inicioSesion) {
                                   final name = nombre;
                                   ProductoModel producto = ProductoModel(name: name);
                                   final id = await dao.insert(producto, modeloUsuario.usuarioActual!.id);
@@ -180,7 +180,7 @@ class ProductScreen extends StatelessWidget {
                             InkWell(
                               // Boton comprar ahora
                               onTap: () {
-                                if (!modeloUsuario.incioSesion) {
+                                if (!modeloUsuario.inicioSesion) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: const Text('Por favor, inicie sesión para comprar.'),

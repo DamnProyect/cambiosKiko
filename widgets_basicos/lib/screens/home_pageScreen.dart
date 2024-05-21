@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
     return Consumer<ModeloUsuario>(
       builder: (context, modeloUsuario, child) {
         final esAdmin = modeloUsuario.esAdmin;
-        final sesionInciada = modeloUsuario.incioSesion;
+        final sesionIniciada = modeloUsuario.inicioSesion;
 
         return esAdmin
             ? const AdminScaffold()
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
                   toolbarHeight: 70,
                   elevation: 0,
                   actions: [
-                    sesionInciada
+                    sesionIniciada
                         ? ElevatedButton(
                             onPressed: () {
                               modeloUsuario.cerrarSesion();
