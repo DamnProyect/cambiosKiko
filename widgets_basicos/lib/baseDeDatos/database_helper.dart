@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'usuarioModel.dart';
 
 class DatabaseHelper {
   static DatabaseHelper? _databaseHelper;
@@ -33,7 +34,7 @@ class DatabaseHelper {
 
         // Tabla de usuarios
         await db.execute(
-          'CREATE TABLE usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT, phoneNumber TEXT)',
+          'CREATE TABLE usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT, phoneNumber TEXT, birthDate TEXT)',
         );
         print("Table 'usuarios' created."); // Log de creación de tabla
 
@@ -47,6 +48,37 @@ class DatabaseHelper {
         print("Database opened"); // Log de apertura de base de datos
       },
     );
+  }
+
+  Future<int> insertUsuario(Usuario usuario) async {
+    final db = await instance.db;
+    return await db.insert('usuarios', usuario.toMap());
+  }
+
+  Future<Usuario?> getUsuario(String username, String password) async {
+    final db = await instance.db;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'usuarios',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+
+    if (maps.isNotEmpty) {
+      return Usuario.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
+  Future<bool> checkUsuarioExistente(String username) async {
+    final db = await instance.db;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'usuarios',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+
+    return maps.isNotEmpty;
   }
 
   // Función de eliminar la base de datos

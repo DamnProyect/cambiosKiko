@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widgets_basicos/screens/registro.dart';
-
 import '../view_models/modelo_usuario.dart';
 
 class LoginPage extends StatefulWidget {
@@ -12,21 +11,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Guardan el contenido del textField
   final textControlerUsuario = TextEditingController();
   final textControlerPass = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    //Es importante que los demas widgets tengan el mismo consumer y contexto para poder
-    //usar los datos del modelo.
     return Consumer<ModeloUsuario>(
       builder: (context, modeloUsuario, child) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: const Text("Iniciar sesión",
-                style: TextStyle(color: Colors.white)),
+            title: const Text("Iniciar sesión", style: TextStyle(color: Colors.white)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
@@ -52,16 +47,28 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    //Modificaion del incio de sesion.
-                    onPressed: () {
-                      if (textControlerUsuario.text == "admin") {
-                        modeloUsuario.loginAdmin(true);
+                    onPressed: () async {
+                      bool success = await modeloUsuario.iniciarSesion(
+                        textControlerUsuario.text,
+                        textControlerPass.text,
+                      );
+                      if (success) {
+                        Navigator.pop(context);
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Error'),
+                            content: const Text('Usuario o contraseña incorrectos'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
                       }
-                      //Cambio el valor de la variable para mostrar un home
-                      modeloUsuario.cambiarNombre(textControlerUsuario.text);
-                      modeloUsuario.modificarBotonInicio(true);
-
-                      Navigator.pop(context);
                     },
                     child: const Text('Iniciar sesión'),
                   ),
@@ -114,7 +121,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToRegisterPage(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => RegisterPage()));
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => RegisterPage()));
   }
 }

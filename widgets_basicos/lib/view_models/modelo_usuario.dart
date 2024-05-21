@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:widgets_basicos/models/Favoritos.dart';
 import 'package:widgets_basicos/models/carga_Datos.dart';
 import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
+import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
+import 'package:widgets_basicos/baseDeDatos/usuarioModel.dart';
 
 class ModeloUsuario extends ChangeNotifier {
   // Listado de favoritos
   List<Favorito> favorites = <Favorito>[];
   final ProductoDao _productoDao = ProductoDao();
+  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+
+  // Usuario actual
+  Usuario? _usuarioActual;
+
+  Usuario? get usuarioActual => _usuarioActual;
 
   // Verifica si se ha iniciado sesión
-  bool incioSesion = false;
+  bool get incioSesion => _usuarioActual != null;
 
   // Constructor
   ModeloUsuario() {
@@ -22,7 +30,6 @@ class ModeloUsuario extends ChangeNotifier {
   }
 
   void modificarBotonInicio(bool valor) {
-    incioSesion = valor;
     notifyListeners();
   }
 
@@ -82,6 +89,35 @@ class ModeloUsuario extends ChangeNotifier {
   }
 
   void upadteScreen() {
+    notifyListeners();
+  }
+
+  // Registro de usuario
+  Future<bool> registrarUsuario(String username, String password, String email, String phoneNumber, String birthDate) async {
+    bool existe = await _databaseHelper.checkUsuarioExistente(username);
+    if (existe) {
+      return false;
+    } else {
+      final usuario = Usuario(id: 0, username: username, password: password, email: email, phoneNumber: phoneNumber, birthDate: birthDate);
+      await _databaseHelper.insertUsuario(usuario);
+      return true;
+    }
+  }
+
+  // Inicio de sesión de usuario
+  Future<bool> iniciarSesion(String username, String password) async {
+    final usuario = await _databaseHelper.getUsuario(username, password);
+    if (usuario != null) {
+      _usuarioActual = usuario;
+      notifyListeners();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void cerrarSesion() {
+    _usuarioActual = null;
     notifyListeners();
   }
 }

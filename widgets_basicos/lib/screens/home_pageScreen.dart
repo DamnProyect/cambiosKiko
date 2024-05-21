@@ -6,7 +6,6 @@ import 'package:widgets_basicos/screens/carritoScreen.dart';
 import 'package:widgets_basicos/screens/favoritesScreen.dart';
 import 'package:widgets_basicos/screens/homeScreenGrid.dart';
 import 'package:widgets_basicos/screens/temporal_loginScreen.dart';
-
 import '../view_models/modelo_usuario.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,41 +15,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  //Index con el que comienza el bottombar
   int currentIndex = 0;
   String saludo = "Bienvenido ";
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    //Importante para que se compartan los cambios entre los widgets la linea del consumer y
-    //builder deben ser exactas.
     return Consumer<ModeloUsuario>(
-      builder: (context, ModeloUsuario, child) {
-        //Verifico si el usuario es administrador y dependiendo retorno el homepage
-        final esAdmin = ModeloUsuario.esAdmin;
-        final sesionInciada = ModeloUsuario.incioSesion;
+      builder: (context, modeloUsuario, child) {
+        final esAdmin = modeloUsuario.esAdmin;
+        final sesionInciada = modeloUsuario.incioSesion;
 
         return esAdmin
             ? const AdminScaffold()
             : Scaffold(
-                //AppBar
                 appBar: AppBar(
                   toolbarHeight: 70,
                   elevation: 0,
                   actions: [
-                    //Dependiendo si se ha iniciado sesion se muestra un boton u otro.
                     sesionInciada
                         ? ElevatedButton(
                             onPressed: () {
-                              ModeloUsuario.modificarBotonInicio(false);
-                              ModeloUsuario.cambiarNombre("");
-                              ModeloUsuario.loginAdmin(false);
+                              modeloUsuario.cerrarSesion();
                             },
                             child: const Icon(Icons.exit_to_app))
-                        :
-                        //Icono que manda al logIn
-                        Container(
+                        : Container(
                             margin: const EdgeInsets.only(right: 12),
                             width: 40,
                             height: 40,
@@ -61,7 +49,6 @@ class _HomePageState extends State<HomePage> {
                             child: Builder(
                               builder: (context) => InkWell(
                                 child: const Icon(Icons.person),
-                                // Boton de login
                                 onTap: () => _showLoginForm(context),
                               ),
                             ),
@@ -69,22 +56,17 @@ class _HomePageState extends State<HomePage> {
                   ],
                   backgroundColor: Colors.black,
                   title: Text(
-                    //nombre del usuario a modificar
-                    saludo + ModeloUsuario.nombre,
+                    saludo + (modeloUsuario.usuarioActual?.username ?? ''),
                     style: GoogleFonts.playfairDisplay(
                         fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   foregroundColor: Colors.white,
                 ),
                 body: [
-                  //Listado de paginas que se mostraran en el centro de al app, es un array
-                  //que cambia segun el index del bottombar
                   const HomeScreenGrid(),
                   const ListadoFavoritos(),
                   const CarritoPage(),
-                  //Pantalla de favoritos
                 ][currentIndex],
-                //Navigation bar
                 bottomNavigationBar: NavigationBar(
                   destinations: const [
                     NavigationDestination(
@@ -101,13 +83,11 @@ class _HomePageState extends State<HomePage> {
                   selectedIndex: currentIndex,
                   indicatorColor: Colors.grey[400],
                   onDestinationSelected: (value) {
-                    //Hace el cambio del contenido, modificando el estado.
                     setState(() {
                       currentIndex = value;
                     });
                   },
                 ),
-                //Ventana lateral del login page
                 endDrawer: const Drawer(
                   child: LoginPage(),
                 ),
@@ -116,7 +96,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Metodo que llama al login page
   void _showLoginForm(BuildContext context) {
     showModalBottomSheet(
       context: context,
