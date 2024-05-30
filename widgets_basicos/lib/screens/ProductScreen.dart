@@ -1,10 +1,14 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:widgets_basicos/baseDeDatos/producto_dao.dart';
-import 'package:widgets_basicos/baseDeDatos/producto_model.dart';
-import 'package:widgets_basicos/models/Favoritos.dart';
-import 'package:widgets_basicos/view_models/modelo_usuario.dart';
+import "dart:io";
+import "dart:math";
+
+import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "package:widgets_basicos/baseDeDatos/producto_dao.dart";
+import "package:widgets_basicos/baseDeDatos/producto_model.dart";
+import "package:widgets_basicos/models/Favoritos.dart";
+import "package:widgets_basicos/screens/pedidosScreen.dart";
+import "package:widgets_basicos/view_models/modelo_usuario.dart";
 
 class ProductScreen extends StatelessWidget {
   final String image;
@@ -15,7 +19,8 @@ class ProductScreen extends StatelessWidget {
   ProductScreen(this.image, this.nombre, this.precio, this.desc, {super.key}) {
     super.key;
   }
-  // Metodos de insert y de la base de datos
+
+  // Métodos de insert y de la base de datos
   final dao = ProductoDao();
 
   @override
@@ -34,18 +39,16 @@ class ProductScreen extends StatelessWidget {
                     alignment: Alignment.topCenter,
                     height: MediaQuery.of(context).size.height / 1.7,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 244, 224, 224),
+                      color: const Color.fromARGB(255, 244, 224, 224),
                       image: DecorationImage(
-                        image: AssetImage(image),
-                        fit: BoxFit.cover,
-                      ),
+                          image: FileImage(File(image)), fit: BoxFit.cover),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Boton de volver
+                          // Botón de volver
                           InkWell(
                             onTap: () {
                               Navigator.pop(context);
@@ -63,7 +66,7 @@ class ProductScreen extends StatelessWidget {
                             ),
                           ),
 
-                          // Boton de favorito
+                          // Botón de favorito
                           InkWell(
                             onTap: () {
                               int indexFav =
@@ -75,11 +78,11 @@ class ProductScreen extends StatelessWidget {
                                 // Lo agrega
                                 modeloUsuario.addFavorite(
                                   Favorito(
-                                    id: 0, // Autoincremental en la BD
-                                    nombre: nombre,
-                                    imagen: image,
-                                    precio: precio,
-                                  ),
+                                      id: 0,
+                                      nombre: nombre,
+                                      imagen: image,
+                                      precio: precio,
+                                      desc: desc),
                                 );
                               }
                             },
@@ -89,7 +92,8 @@ class ProductScreen extends StatelessWidget {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              // Boton de favorito
+
+                              // Botón de favorito
                               child: Icon(
                                 Icons.favorite,
                                 size: 22,
@@ -101,7 +105,9 @@ class ProductScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 15, right: 15),
                     child: Column(
@@ -110,39 +116,35 @@ class ProductScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(right: 5),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // Aca se modifica el centrado del nombre del producto
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Nombre del producto
                               Text(
                                 nombre,
                                 style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              // Precio del producto
-                              Text(
-                                "${precio.toStringAsFixed(2)} €",
-                                style: TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.red.withOpacity(0.7),
-                                ),
+                                    fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        // Descripcion simple
-                        const Text(
-                          "Infoooo",
-                          style: TextStyle(color: Colors.black54, fontSize: 16),
+
+                        // Precio del producto
+                        Text(
+                          "${precio.toStringAsFixed(2)} €",
+                          style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.red.withOpacity(0.7)),
                         ),
-                        const SizedBox(height: 18),
-                        // Descripcion larga
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // Descripción larga
                         Text(
                           desc,
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.black54),
                         ),
                         const SizedBox(height: 20),
                         // Botones de carrito y compra
@@ -153,13 +155,22 @@ class ProductScreen extends StatelessWidget {
                               onTap: () async {
                                 if (modeloUsuario.inicioSesion) {
                                   final name = nombre;
-                                  ProductoModel producto = ProductoModel(name: name);
-                                  final id = await dao.insert(producto, modeloUsuario.usuarioActual!.id);
+                                  ProductoModel producto =
+                                      ProductoModel(name: name, price: precio);
+                                  final id = await dao.insert(producto,
+                                      modeloUsuario.usuarioActual!.id);
                                   producto = producto.copyWith(id: id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Producto añadido al carrito correctamente'),
+                                    ),
+                                  );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text('Por favor, inicie sesión para agregar al carrito.'),
+                                    const SnackBar(
+                                      content: Text(
+                                          'Por favor, inicie sesión para agregar al carrito.'),
                                     ),
                                   );
                                 }
@@ -167,9 +178,8 @@ class ProductScreen extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(18),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF7F8FA),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+                                    color: const Color(0xFFF7F8FA),
+                                    borderRadius: BorderRadius.circular(30)),
                                 child: const Icon(
                                   CupertinoIcons.cart_fill,
                                   size: 22,
@@ -178,18 +188,107 @@ class ProductScreen extends StatelessWidget {
                               ),
                             ),
                             InkWell(
-                              // Boton comprar ahora
-                              onTap: () {
+                              // Botón comprar ahora
+                              onTap: () async {
                                 if (!modeloUsuario.inicioSesion) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text('Por favor, inicie sesión para comprar.'),
+                                    const SnackBar(
+                                      content: Text(
+                                          'Por favor, inicie sesión para comprar.'),
                                     ),
+                                  );
+                                } else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Confirmar Pedido'),
+                                        content: const Text(
+                                            '¿Estás seguro de que deseas realizar este pedido?'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Cancelar'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.of(context).pop();
+
+                                              final usuarioId =
+                                                  Provider.of<ModeloUsuario>(
+                                                          context,
+                                                          listen: false)
+                                                      .usuarioActual!
+                                                      .id;
+                                              // Insertar el nuevo pedido en la tabla Pedidos
+                                              final pedidoId =
+                                                  await dao.insertarPedido(
+                                                      usuarioId,
+                                                      DateTime.now(),
+                                                      precio);
+
+                                              // Insertar los detalles del pedido en la tabla DetallesPedido
+                                              await dao.insertarDetallePedido(
+                                                  pedidoId,
+                                                  Random().nextInt(100) + 1,
+                                                  1,
+                                                  nombre,
+                                                  precio);
+
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ListadoPedidos()),
+                                              );
+
+                                              // Muestra el mensaje de confirmación de compra
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.check_circle,
+                                                          color: Colors.green,
+                                                          size: 28.0,
+                                                        ),
+                                                        SizedBox(width: 10),
+                                                        Text(
+                                                            'Pedido Realizado'),
+                                                      ],
+                                                    ),
+                                                    content: const Text(
+                                                        'El pedido se ha realizado correctamente.'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: const Text(
+                                                            'Aceptar'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: const Text('Confirmar'),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 }
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 70),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 18, horizontal: 70),
                                 decoration: BoxDecoration(
                                   color: Colors.black,
                                   borderRadius: BorderRadius.circular(30),
@@ -204,9 +303,9 @@ class ProductScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            ),
+                            )
                           ],
-                        ),
+                        )
                       ],
                     ),
                   ),

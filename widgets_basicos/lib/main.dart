@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:widgets_basicos/screens/home_pageScreen.dart';
 import 'package:widgets_basicos/models/carga_Datos.dart';
-import 'baseDeDatos/database_helper.dart';
-import 'view_models/modelo_usuario.dart';
+import 'package:widgets_basicos/baseDeDatos/database_helper.dart';
+import 'package:widgets_basicos/view_models/modelo_usuario.dart';
 
 void main() async {
   // Asegura la inicialización de widgets
@@ -28,25 +28,26 @@ void main() async {
   );
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      // Temas de la aplicación, texto, colores etc
-      theme: ThemeData(
-        // Texto de la app
-        fontFamily: 'Georgia',
-      ),
-      // La propiedad home es el inicio de la app, desde allí ya se manejan los demás widget que la componen
-      home: HomePage(),
+    return Consumer<ModeloUsuario>(
+      builder: (context, modeloUsuario, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          // Temas de la aplicación, texto, colores etc
+          theme: ThemeData(
+            // Texto de la app
+            fontFamily: 'Georgia',
+            // Modo oscuro o claro según el estado
+            brightness: modeloUsuario.isDarkMode ? Brightness.dark : Brightness.light,
+          ),
+          // La propiedad home es el inicio de la app, desde allí ya se manejan los demás widget que la componen
+          home: HomePage(),
+        );
+      },
     );
   }
 }

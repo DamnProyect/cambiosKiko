@@ -21,7 +21,8 @@ class _LoginPageState extends State<LoginPage> {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: const Text("Iniciar sesión", style: TextStyle(color: Colors.white)),
+            title: const Text("Iniciar sesión",
+                style: TextStyle(color: Colors.white)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
@@ -48,6 +49,10 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
+                      if (textControlerUsuario.text == "admin") {
+                        modeloUsuario.loginAdmin(true);
+                      }
+
                       bool success = await modeloUsuario.iniciarSesion(
                         textControlerUsuario.text,
                         textControlerPass.text,
@@ -59,7 +64,8 @@ class _LoginPageState extends State<LoginPage> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('Error'),
-                            content: const Text('Usuario o contraseña incorrectos'),
+                            content:
+                                const Text('Usuario o contraseña incorrectos'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
@@ -121,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToRegisterPage(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => RegisterPage()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => RegisterPage()));
   }
 }

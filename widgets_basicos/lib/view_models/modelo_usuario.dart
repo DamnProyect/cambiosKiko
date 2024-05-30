@@ -1,3 +1,4 @@
+// modelo_usuario.dart
 import 'package:flutter/material.dart';
 import 'package:widgets_basicos/models/Favoritos.dart';
 import 'package:widgets_basicos/models/carga_Datos.dart';
@@ -21,6 +22,11 @@ class ModeloUsuario extends ChangeNotifier {
   // Verifica si se ha iniciado sesión
   bool get inicioSesion => _usuarioActual != null;
 
+  // Indicador de modo oscuro
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
   // Constructor
   ModeloUsuario() {
     _loadFavorites();
@@ -29,7 +35,9 @@ class ModeloUsuario extends ChangeNotifier {
 
   Future<void> _loadFavorites() async {
     if (_usuarioActual != null) {
-      favorites = (await _databaseHelper.getFavoritos(_usuarioActual!.id)).map((map) => Favorito.fromMap(map)).toList();
+      favorites = (await _databaseHelper.getFavoritos(_usuarioActual!.id))
+          .map((map) => Favorito.fromMap(map))
+          .toList();
     }
     notifyListeners();
   }
@@ -57,7 +65,8 @@ class ModeloUsuario extends ChangeNotifier {
   // Método para agregar el favorito
   void addFavorite(Favorito element) async {
     if (_usuarioActual != null && existFavorite(element.nombre) == -1) {
-      await _databaseHelper.insertFavorito(_usuarioActual!.id, element.imagen, element.nombre, element.precio);
+      await _databaseHelper.insertFavorito(_usuarioActual!.id, element.imagen,
+          element.nombre, element.precio, element.desc);
       favorites.add(element);
       notifyListeners();
     }
@@ -67,6 +76,7 @@ class ModeloUsuario extends ChangeNotifier {
   void deleteFavorite(int favotiteIndex) async {
     if (_usuarioActual != null) {
       final favorito = favorites[favotiteIndex];
+
       await _databaseHelper.deleteFav(favorito.id);
       favorites.removeAt(favotiteIndex);
       notifyListeners();
@@ -107,7 +117,8 @@ class ModeloUsuario extends ChangeNotifier {
   }
 
   // Registro de usuario
-  Future<bool> registrarUsuario(String username, String password, String email, String phoneNumber, String birthDate) async {
+  Future<bool> registrarUsuario(String username, String password, String email,
+      String phoneNumber, String birthDate) async {
     bool existe = await _databaseHelper.checkUsuarioExistente(username);
     if (existe) {
       return false;
@@ -146,10 +157,18 @@ class ModeloUsuario extends ChangeNotifier {
   }
 
   // Métodos para el carrito
-  Future<void> addToCarrito(String name, int cantidad) async {
+  Future<void> addToCarrito(String name, int cantidad, int price) async {
     if (_usuarioActual != null) {
-      await _databaseHelper.insertCarrito(_usuarioActual!.id, name, cantidad);
+      await _productoDao.insert(
+          ProductoModel(name: name, cantidad: cantidad, price: price),
+          _usuarioActual!.id);
       await _loadCarrito();
     }
+  }
+
+  // Método para cambiar entre modo oscuro y claro
+  void toggleDarkMode() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
   }
 }
