@@ -27,8 +27,8 @@ class settingScreen extends StatelessWidget {
       DrawerHeader(
         child: Text(
           'Ajustes',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: modeloUsuario.isDarkMode ? Colors.white : Colors.black,
             fontSize: 24,
           ),
         ),
